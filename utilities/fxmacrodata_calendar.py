@@ -22,13 +22,15 @@ def fetch_fxmacrodata_calendar(
 
     limit_count = max(1, min(int(limit), 100))
     params: dict[str, str] = {"limit": str(limit_count)}
+    headers: dict[str, str] = {}
     token = api_key or os.getenv("FXMACRODATA_API_KEY")
     if token:
-        params["api_key"] = token
+        headers["X-API-Key"] = token
 
     response = requests.get(
         f"{base_url.rstrip('/')}/calendar/{currency.lower()}",
         params=params,
+        headers=headers,
         timeout=20,
     )
     response.raise_for_status()
@@ -37,9 +39,7 @@ def fetch_fxmacrodata_calendar(
         return events[:limit_count]
 
     return [
-        event
-        for event in events
-        if int(event.get("market_tier") or 99) <= min_tier
+        event for event in events if int(event.get("market_tier") or 99) <= min_tier
     ][:limit_count]
 
 
